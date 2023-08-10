@@ -161,6 +161,10 @@ class SgLatestPublishModel(ShotgunModel):
                         sg_filters = [
                             ["version", "is", {"type": "Version", "id": sg_data["id"]}]
                         ]
+                    elif sg_data.get("type") == "Delivery":
+                        sg_filters=[
+                            ["delivery_sg_published_files_deliveries", "is", {"type": "Delivery", "id": sg_data["id"]}]
+                        ]
                     else:
                         sg_filters = [
                             [
