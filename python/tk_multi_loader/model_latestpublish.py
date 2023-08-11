@@ -128,6 +128,8 @@ class SgLatestPublishModel(ShotgunModel):
                     sg_filters = [["task", "in", data]]
                 elif entity_type == "Version":
                     sg_filters = [["version", "in", data]]
+                elif entity_type == "Delivery":
+                    sg_filters = [["delivery_sg_published_files_deliveries", "in", data]]
                 else:
                     sg_filters = [["entity", "in", data]]
 
