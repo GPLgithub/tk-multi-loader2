@@ -64,19 +64,15 @@ class SgPublishHistoryModel(ShotgunModel):
             publish_type_field = "tank_type"
 
         # fields to pull down
-        fields = [publish_type_field] + constants.PUBLISHED_FILES_FIELDS
+        fields = [publish_type_field] + constants.PUBLISHED_FILES_FIELDS + app.get_setting("published_file_fields", [])
 
-        # when we filter out which other publishes are associated with this one,
+        # When we filter out which other publishes are associated with this one,
         # to effectively get the "version history", we look for items
-        # which have the same project, same entity assocation, same name, same type
-        # and the same task.
-        filters = [
-            ["project", "is", sg_data["project"]],
-            ["name", "is", sg_data["name"]],
-            ["task", "is", sg_data["task"]],
-            ["entity", "is", sg_data["entity"]],
-            [publish_type_field, "is", sg_data[publish_type_field]],
-        ]
+        # based on the publish_file_matching_fields setting.
+        pub_matching_fields = app.get_setting("published_file_matching_fields", [])
+        filters = []
+        for field in pub_matching_fields:
+            filters.append([field, "is", sg_data[field]])
 
         # add external filters from config
         app = sgtk.platform.current_bundle()
