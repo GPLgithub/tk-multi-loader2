@@ -68,7 +68,9 @@ class SgPublishHistoryModel(ShotgunModel):
 
         # When we filter out which other publishes are associated with this one,
         # to effectively get the "version history", we look for items
-        # based on the publish_file_matching_fields setting.
+        # based on the publish_history_group_by_fields setting.
+        # By default, it finds Published Files with the same
+        # project, task, entity, name and published_file_type.
         group_by_fields = app.get_setting("publish_history_group_by_fields", [])
         filters = []
         for field in group_by_fields:
