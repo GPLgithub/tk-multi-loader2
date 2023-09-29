@@ -122,6 +122,22 @@ configuration:
         values:
             type: dict
 
+    publish_history_group_by_fields:
+        type: list
+        description: "The Published File fields to use when looking for the publish history. They are
+                      used to match the current Published File data against other Published Files."
+        values:
+            type: str
+        allows_empty: False
+        default_value:
+            ["project", "task", "entity", "name", "published_file_type"]
+    published_file_fields:
+        type: list
+        values:
+            type: str
+        allows_empty: True
+        description: "List of Published File fields returned when querying ShotGrid for published file history."
+
     publish_filters:
         type: list
         description: "List of additional ShotGrid filters to apply to the publish listings.  These
