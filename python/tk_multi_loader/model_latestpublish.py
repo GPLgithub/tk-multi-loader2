@@ -371,12 +371,13 @@ class SgLatestPublishModel(ShotgunModel):
             )
 
             # see if we can get a thumbnail for this node!
-            if tree_view_sg_data and tree_view_sg_data.get("image"):
+            image_field = utils.get_item_image_field(tree_view_item)
+            if image_field:
                 # there is a thumbnail for this item!
                 self._request_thumbnail_download(
                     item,
-                    "image",
-                    tree_view_sg_data["image"],
+                    image_field,
+                    tree_view_sg_data[image_field],
                     tree_view_sg_data["type"],
                     tree_view_sg_data["id"],
                 )
@@ -459,8 +460,8 @@ class SgLatestPublishModel(ShotgunModel):
         :param field: The Shotgun field which the thumbnail is associated with.
         :param path: A path on disk to the thumbnail. This is a file in jpeg format.
         """
-
-        if field != "image":
+        image_field = utils.get_item_image_field(item)
+        if not image_field or image_field != field:
             # there may be other thumbnails being loaded in as part of the data flow
             # (in particular, created_by.HumanUser.image) - these ones we just want to
             # ignore and not display.

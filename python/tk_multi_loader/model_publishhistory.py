@@ -100,6 +100,33 @@ class SgPublishHistoryModel(ShotgunModel):
     ############################################################################################
     # subclassed methods
 
+    def _item_created(self, item):
+        """
+        Called when an item is created, before it is added to the model.
+
+        Override default behavior to only download thumbnails for the fields
+        we're interested in, and avoid downloading preview images.
+
+        :param item: The item that was just created.
+        :type item: :class:`~PySide.QtGui.QStandardItem`
+        """
+        # as per docs, call the base implementation
+        super(ShotgunModel, self)._item_created(item)
+
+        # request thumbnail for this item
+        if sgtk.platform.current_bundle().get_setting("download_thumbnails"):
+            sg_data = item.data(self.SG_DATA_ROLE)
+            if sg_data:
+                image_field = utils.get_item_image_field(item)
+                if image_field:
+                    self._request_thumbnail_download(
+                        item,
+                        image_field,
+                        sg_data[image_field],
+                        sg_data.get("type"),
+                        sg_data.get("id"),
+                    )
+
     def _populate_item(self, item, sg_data):
         """
         Whenever an item is constructed, this methods is called. It allows subclasses to intercept
@@ -186,10 +213,11 @@ class SgPublishHistoryModel(ShotgunModel):
         :param field: The Shotgun field which the thumbnail is associated with.
         :param path: A path on disk to the thumbnail. This is a file in jpeg format.
         """
-        if field == "image":
+        image_field = utils.get_item_image_field(item)
+        if image_field and field == image_field:
             thumb = QtGui.QPixmap.fromImage(image)
             item.setData(thumb, SgPublishHistoryModel.PUBLISH_THUMB_ROLE)
-        else:
+        elif field == "created_by.HumanUser.image":
             thumb = QtGui.QPixmap.fromImage(image)
             item.setData(thumb, SgPublishHistoryModel.USER_THUMB_ROLE)
 
