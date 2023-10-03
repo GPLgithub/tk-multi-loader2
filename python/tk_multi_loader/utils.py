@@ -329,25 +329,26 @@ def resolve_filters(filters):
         resolved_filters.append(resolved_filter)
     return resolved_filters
 
-def get_item_image_field(item):
+def get_thumbnail_field_for_item(item, use_version_thumbnail_as_fallback=True):
     """
     Get the field to use for the thumbnail for the given item.
 
-    It returns "image" if the item has an image field and there's an
-    actual image to use. If there's no image field or no image to use,
-    it tries to use the version.Version.image field in the same way,
-    if the use_version_thumbnail_as_fallback setting is set to true.
+    Check if a thumbnail is available for the given item, and return
+    the field name to download it from. If not available and falling back
+    on the Version is allowed, check if one is available for it and,
+    if so, return the dotted field to use to retrieve it.
+
 
     If there's no image field or no image to use, it returns None.
 
     :param item: The QStandardItem to get the thumbnail field for.
+    :param use_version_thumbnail_as_fallback: Whether to use the Version's
+        thumbnail as a fallback if the item doesn't have one.
     :returns: A SG field, e.g. "image", or ``None``.
     """
-    app = sgtk.platform.current_bundle()
     sg_data = item.get_sg_data()
     if not sg_data:
         return None
-    use_version_thumbnail_as_fallback = app.get_setting("use_version_thumbnail_as_fallback")
     # When it's an empty thumbnail, it's an AWS link with a "no_preview_t.jpg" image.
     if sg_data.get("image") and "no_preview_t.jpg" not in sg_data.get("image"):
         return "image"

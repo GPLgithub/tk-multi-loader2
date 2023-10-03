@@ -49,6 +49,10 @@ class SgLatestPublishModel(ShotgunModel):
 
         app = sgtk.platform.current_bundle()
 
+        self._use_version_thumbnail_as_fallback = app.get_setting(
+            "use_version_thumbnail_as_fallback"
+        )
+
         # init base class
         ShotgunModel.__init__(
             self,
@@ -371,7 +375,7 @@ class SgLatestPublishModel(ShotgunModel):
             )
 
             # see if we can get a thumbnail for this node!
-            image_field = utils.get_item_image_field(tree_view_item)
+            image_field = utils.get_thumbnail_field_for_item(tree_view_item, self._use_version_thumbnail_as_fallback)
             if image_field:
                 # there is a thumbnail for this item!
                 self._request_thumbnail_download(
@@ -460,7 +464,7 @@ class SgLatestPublishModel(ShotgunModel):
         :param field: The Shotgun field which the thumbnail is associated with.
         :param path: A path on disk to the thumbnail. This is a file in jpeg format.
         """
-        image_field = utils.get_item_image_field(item)
+        image_field = utils.get_thumbnail_field_for_item(item, self._use_version_thumbnail_as_fallback)
         if not image_field or image_field != field:
             # there may be other thumbnails being loaded in as part of the data flow
             # (in particular, created_by.HumanUser.image) - these ones we just want to
