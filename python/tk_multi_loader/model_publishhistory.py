@@ -220,9 +220,13 @@ class SgPublishHistoryModel(ShotgunModel):
         :param path: A path on disk to the thumbnail. This is a file in jpeg format.
         """
         image_field = utils.get_thumbnail_field_for_item(item, self._use_version_thumbnail_as_fallback)
+        # There are only two images used in the model, the Published File thumbnail and the user thumbnail.
+        # This method in theory will be called only for these fields, since there are the only ones we request
+        # a download for. But just in case, we only populate the thumbnail image for the fields we expect.
         if image_field and field == image_field:
             thumb = QtGui.QPixmap.fromImage(image)
             item.setData(thumb, SgPublishHistoryModel.PUBLISH_THUMB_ROLE)
+        # created_by.HumanUser.image is the only image field that can represent a user thumbnail.
         elif field == "created_by.HumanUser.image":
             thumb = QtGui.QPixmap.fromImage(image)
             item.setData(thumb, SgPublishHistoryModel.USER_THUMB_ROLE)
