@@ -35,6 +35,9 @@ class SgPublishHistoryModel(ShotgunModel):
         # folder icon
         self._loading_icon = QtGui.QPixmap(":/res/loading_100x100.png")
         app = sgtk.platform.current_bundle()
+        self._use_version_thumbnail_as_fallback = app.get_setting(
+            "use_version_thumbnail_as_fallback"
+        )
         ShotgunModel.__init__(
             self,
             parent,
@@ -99,6 +102,36 @@ class SgPublishHistoryModel(ShotgunModel):
 
     ############################################################################################
     # subclassed methods
+
+    def _item_created(self, item):
+        """
+        Called when an item is created, before it is added to the model.
+
+        Override default behavior to only download thumbnails for the fields
+        we're interested in, and avoid downloading preview images when no
+        actual image is available.
+
+        :param item: The item that was just created.
+        :type item: :class:`~PySide.QtGui.QStandardItem`
+        """
+        # We call the ShotgunModel base implementation
+        # since we want to completely override the default
+        # behavior.
+        super(ShotgunModel, self)._item_created(item)
+
+        # request thumbnail for this item
+        if sgtk.platform.current_bundle().get_setting("download_thumbnails"):
+            sg_data = item.data(self.SG_DATA_ROLE)
+            if sg_data:
+                image_field = utils.get_thumbnail_field_for_item(item, self._use_version_thumbnail_as_fallback)
+                if image_field:
+                    self._request_thumbnail_download(
+                        item,
+                        image_field,
+                        sg_data[image_field],
+                        sg_data.get("type"),
+                        sg_data.get("id"),
+                    )
 
     def _populate_item(self, item, sg_data):
         """
@@ -186,10 +219,15 @@ class SgPublishHistoryModel(ShotgunModel):
         :param field: The Shotgun field which the thumbnail is associated with.
         :param path: A path on disk to the thumbnail. This is a file in jpeg format.
         """
-        if field == "image":
+        image_field = utils.get_thumbnail_field_for_item(item, self._use_version_thumbnail_as_fallback)
+        # There are only two images used in the model, the Published File thumbnail and the user thumbnail.
+        # This method in theory will be called only for these fields, since there are the only ones we request
+        # a download for. But just in case, we only populate the thumbnail image for the fields we expect.
+        if image_field and field == image_field:
             thumb = QtGui.QPixmap.fromImage(image)
             item.setData(thumb, SgPublishHistoryModel.PUBLISH_THUMB_ROLE)
-        else:
+        # created_by.HumanUser.image is the only image field that can represent a user thumbnail.
+        elif field == "created_by.HumanUser.image":
             thumb = QtGui.QPixmap.fromImage(image)
             item.setData(thumb, SgPublishHistoryModel.USER_THUMB_ROLE)
 
