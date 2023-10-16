@@ -16,6 +16,7 @@ Constants used by the loader.
 # fields to pull down for published files
 PUBLISHED_FILES_FIELDS = [
     "name",
+    "code",
     "version_number",
     "image",
     "entity",
